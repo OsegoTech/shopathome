@@ -1,0 +1,47 @@
+name: Trigger auto deployment for container-app-hlnpyv4hbz2nc
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - 'fastify-api-server/**'
+    - '.github/workflows/container-app-hlnpyv4hbz2nc-AutoDeployTrigger-95e714a7-39a4-41ce-af25-f71a62d315a2.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CONTAINERAPPHLNPYV4HBZ2NC_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CONTAINERAPPHLNPYV4HBZ2NC_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CONTAINERAPPHLNPYV4HBZ2NC_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}/fastify-api-server 
+          registryUrl: 
+          registryUsername: ${{ secrets.CONTAINERAPPHLNPYV4HBZ2NC_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINERAPPHLNPYV4HBZ2NC_REGISTRY_PASSWORD }}
+          containerAppName: container-app-hlnpyv4hbz2nc
+          resourceGroup: shopathomebe1e
+          imageToBuild: default/container-app-hlnpyv4hbz2nc:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
